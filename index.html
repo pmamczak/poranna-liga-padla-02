@@ -108,9 +108,7 @@
       gap: 10px; 
     }
 
-    /* Struktura meczu dopasowana do ekranu telefonu */
     .match-main { display: flex; flex-direction: column; gap: 10px; }
-    
     @media(min-width: 720px) {
       .filter-bar { flex-direction: row; align-items: center; }
       select, input[type="date"] { width: auto; }
@@ -127,7 +125,6 @@
     .pair-player { font-size: 0.85rem; line-height: 1.35; font-weight: normal; color: #f8fafc; word-break: break-word; }
     .vs-divider { text-align: center; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin: -2px 0; }
 
-    /* Wprowadzanie gemów - optymalizacja pod dotyk */
     .sets-box { 
       display: flex; 
       flex-direction: column; 
@@ -144,7 +141,7 @@
     
     .score-input { 
       width: 50px; 
-      height: 42px; /* Wygodny touch target na kciuk */
+      height: 42px; 
       text-align: center; 
       background: #070b13; 
       border: 1px solid var(--border); 
@@ -242,14 +239,15 @@
     }
     .cal-slot-btn { 
       width: 36px; 
-      height: 32px; /* Zwiększone pod wygodny dotyk */
+      height: 32px; 
       border-radius: 4px; 
       border: 1px solid #2d3b55; 
       background: #1e293b; 
       cursor: pointer; 
+      transition: background 0.1s;
     }
-    .cal-slot-btn.available { background: #15803d; border-color: #22c55e; }
-    .cal-slot-btn.unavailable { background: #991b1b; border-color: #ef4444; }
+    .cal-slot-btn.available { background: #15803d !important; border-color: #22c55e !important; }
+    .cal-slot-btn.unavailable { background: #991b1b !important; border-color: #ef4444 !important; }
 
     /* KOMUNIKATY TOAST */
     .toast-alert {
@@ -334,7 +332,7 @@
   <div id="toast" class="toast-alert">Uzupełnij pełne dane</div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPTa9IGG2gEawcyAJRXh94Jhw6OiyNVfSOEEUqAPMZG6mEc28PXFIodd7dtAlQoMtCXg/exec";
 
     const TOP_PLAYERS = [
       "🇵🇱 Marek Kurzyk (5,1)",
@@ -457,7 +455,26 @@
         }
       }
 
-      const input1 = document.getElementById(`m${matchId}-s${setIdx}-p1`);       const input2 = document.getElementById(`m${matchId}-s${setIdx}-p2`);       if (input1) input1.value = setObj.s1;       if (input2) input2.value = setObj.s2;       updateSetScoreDisplay(matchId);     }      function updateSetScoreDisplay(matchId) {       const match = matchesData.find(m => m.id === matchId);       if (!match) return;       let p1Sets = 0, p2Sets = 0;       match.scores.forEach(s => {         const g1 = parseInt(s.s1, 10);         const g2 = parseInt(s.s2, 10);         if (!isNaN(g1) && !isNaN(g2)) {           if (g1 > g2) p1Sets++;           else if (g2 > g1) p2Sets++;         }       });       const badge = document.getElementById(`m${matchId}-summary`);
+      const input1 = document.getElementById(`m${matchId}-s${setIdx}-p1`);
+      const input2 = document.getElementById(`m${matchId}-s${setIdx}-p2`);
+      if (input1) input1.value = setObj.s1;
+      if (input2) input2.value = setObj.s2;
+      updateSetScoreDisplay(matchId);
+    }
+
+    function updateSetScoreDisplay(matchId) {
+      const match = matchesData.find(m => m.id === matchId);
+      if (!match) return;
+      let p1Sets = 0, p2Sets = 0;
+      match.scores.forEach(s => {
+        const g1 = parseInt(s.s1, 10);
+        const g2 = parseInt(s.s2, 10);
+        if (!isNaN(g1) && !isNaN(g2)) {
+          if (g1 > g2) p1Sets++;
+          else if (g2 > g1) p2Sets++;
+        }
+      });
+      const badge = document.getElementById(`m${matchId}-summary`);
       if (badge) {
         badge.textContent = `Sety: ${p1Sets} -${p2Sets}`;
       }
@@ -467,7 +484,8 @@
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
 
-      const dateVal = document.getElementById(`m${matchId}-date`).value;       const reporterVal = document.getElementById(`m${matchId}-reporter`).value;
+      const dateVal = document.getElementById(`m${matchId}-date`).value;
+      const reporterVal = document.getElementById(`m${matchId}-reporter`).value;
 
       let allSetsFilled = true;
       for (let i = 0; i < 3; i++) {
@@ -491,12 +509,11 @@
       localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
       calculateAndRenderStandings();
       renderSchedule();
-      showToast("Wynik zapisany w arkuszu!", true);
+      showToast("Wynik zapisany!", true);
 
       fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "save_match", match: match })
       }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
     }
@@ -522,7 +539,6 @@
       fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "save_match", match: match })
       }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
     }
@@ -584,7 +600,10 @@
         let diffFormatted = "0";
         let diffClass = "badge-diff-zero";
         if (diff > 0) {
-          diffFormatted = `+${diff}`;           diffClass = "badge-diff-pos";         } else if (diff < 0) {           diffFormatted = `${diff}`;
+          diffFormatted = `+${diff}`;
+          diffClass = "badge-diff-pos";
+        } else if (diff < 0) {
+          diffFormatted = `${diff}`;
           diffClass = "badge-diff-neg";
         }
 
@@ -720,11 +739,6 @@
       today.setHours(0, 0, 0, 0);
       const endDate = new Date(2026, 11, 31);
 
-      const saved = localStorage.getItem("padel_availability_p02");
-      if (saved) {
-        try { availabilityData = JSON.parse(saved); } catch (e) {}
-      }
-
       const headDates = document.getElementById("cal-dates-head");
       const headSlots = document.getElementById("cal-slots-head");
       headDates.innerHTML = `<th class="cal-sticky-col" rowspan="2">Zawodnik</th>`;
@@ -791,12 +805,9 @@
 
               localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
 
-              fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "save_availability", key: key, status: nextStatus })
-              }).catch(err => console.error("Błąd zapisu dostępności:", err));
+              // Błyskawiczny i pewny zapis do arkusza Google
+              const saveUrl = SCRIPT_URL + "?action=save_availability&key=" + encodeURIComponent(key) + "&status=" + encodeURIComponent(nextStatus);
+              fetch(saveUrl, { mode: "no-cors" }).catch(err => console.error("Błąd zapisu dostępności:", err));
             };
 
             td.appendChild(btn);
@@ -814,6 +825,7 @@
         const res = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
         const data = await res.json();
 
+        // 1. Aktualizacja meczów
         if (data.matches && data.matches.length > 0) {
           data.matches.forEach(sheetMatch => {
             const idx = matchesData.findIndex(m => Number(m.id) === Number(sheetMatch.id));
@@ -831,6 +843,7 @@
           renderSchedule();
         }
 
+        // 2. Aktualizacja dostępności i ponowne wyrenderowanie kalendarza
         if (data.availability && Object.keys(data.availability).length > 0) {
           availabilityData = data.availability;
           localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));

@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>🎾 PORANNA LIGA PADLA #02</title>
   <style>
     :root {
@@ -12,143 +12,285 @@
       --text-muted: #94a3b8;
       --border: #23314e;
       --accent: #22c55e;
-      
+      --accent-hover: #16a34a;
+
       /* Kolejka nieparzysta (granat) */
       --round-odd-bg: #111a2f;
       --round-odd-border: #1e293b;
       --round-odd-header: #38bdf8;
 
-      /* Kolejka parzysta (ciepły pomarańcz / bursztyn) */
+      /* Kolejka parzysta (bursztyn/pomarańcz) */
       --round-even-bg: #261b11;
       --round-even-border: #452a12;
       --round-even-header: #fb923c;
     }
 
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); margin: 0; padding: 12px; display: flex; justify-content: center; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); margin: 0; padding: 10px 8px; display: flex; justify-content: center; overflow-x: hidden; }
     .container { width: 100%; max-width: 1040px; }
-    h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    
+    h1, h2 { text-align: center; }
+    h2 { font-size: 1.15rem; margin-top: 0; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     .title-center { text-align: center; border-bottom: none; }
 
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
     /* WSKAŹNIK SYNCHRONIZACJI */
     #sync-indicator {
       text-align: center;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
-      margin-top: -12px;
-      margin-bottom: 16px;
+      margin-top: -8px;
+      margin-bottom: 14px;
       font-weight: 500;
-      transition: color 0.3s ease;
     }
     .sync-ok { color: #4ade80 !important; }
     .sync-err { color: #f87171 !important; }
 
     /* TABELA */
-    .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.88rem; }
-    th, td { padding: 9px 8px; border-bottom: 1px solid var(--border); }
-    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-    td.player-name { text-align: left; font-weight: normal; }
-    .pts { font-weight: bold; color: var(--accent); font-size: 1rem; }
+    .table-responsive { 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch; 
+      margin: 0 -4px; 
+      padding-bottom: 4px;
+    }
+    table { width: 100%; min-width: 580px; border-collapse: collapse; text-align: center; font-size: 0.84rem; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
+    td.player-name { text-align: left; font-weight: normal; white-space: nowrap; }
+    .pts { font-weight: bold; color: var(--accent); font-size: 0.95rem; }
     .badge-diff-pos { color: #4ade80; font-weight: bold; }
     .badge-diff-neg { color: #f87171; font-weight: bold; }
     .badge-diff-zero { color: var(--text-muted); }
 
     /* FILTR TERMINARZA */
-    .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; background: #0b1120; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
-    .filter-bar label { font-weight: bold; font-size: 0.88rem; color: #38bdf8; }
-    select, input[type="date"] { background: #0b1120; border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; }
+    .filter-bar { 
+      display: flex; 
+      flex-direction: column;
+      gap: 8px; 
+      margin-bottom: 16px; 
+      background: #0b1120; 
+      padding: 10px; 
+      border-radius: 8px; 
+      border: 1px solid var(--border); 
+    }
+    .filter-bar label { font-weight: bold; font-size: 0.82rem; color: #38bdf8; }
+    select, input[type="date"] { 
+      width: 100%; 
+      background: #0b1120; 
+      border: 1px solid var(--border); 
+      color: #fff; 
+      padding: 8px 10px; 
+      border-radius: 6px; 
+      font-size: 0.88rem; 
+      height: 40px;
+    }
 
     /* KOLEJKI I MECZE */
-    .round-block { border-radius: 12px; padding: 14px; margin-bottom: 24px; border: 1px solid; }
+    .round-block { border-radius: 12px; padding: 10px; margin-bottom: 16px; border: 1px solid; }
     .round-odd { background: var(--round-odd-bg); border-color: var(--round-odd-border); }
     .round-odd .round-title { color: var(--round-odd-header); }
 
     .round-even { background: var(--round-even-bg); border-color: var(--round-even-border); }
     .round-even .round-title { color: var(--round-even-header); }
 
-    .round-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .round-title { font-size: 1.15rem; font-weight: bold; }
+    .round-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .round-title { font-size: 1.05rem; font-weight: bold; }
 
-    .match-card { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; }
-    .match-main { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
-    @media(max-width: 768px) {
-      .match-main { grid-template-columns: 1fr; }
+    .match-card { 
+      background: rgba(0,0,0,0.4); 
+      border: 1px solid rgba(255,255,255,0.08); 
+      border-radius: 10px; 
+      padding: 10px; 
+      margin-bottom: 10px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+    }
+
+    /* Struktura meczu dopasowana do ekranu telefonu */
+    .match-main { display: flex; flex-direction: column; gap: 10px; }
+    
+    @media(min-width: 720px) {
+      .filter-bar { flex-direction: row; align-items: center; }
+      select, input[type="date"] { width: auto; }
+      .match-main { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; }
     }
 
     .teams-box { display: flex; flex-direction: column; gap: 6px; }
-    .pair-container { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); }
-    .pair-player { font-size: 0.88rem; line-height: 1.35; font-weight: normal; color: #f8fafc; }
-    .vs-divider { text-align: center; font-size: 0.72rem; font-weight: 800; color: var(--text-muted); margin: -2px 0; }
+    .pair-container { 
+      border: 1px solid rgba(255,255,255,0.1); 
+      border-radius: 8px; 
+      padding: 6px 10px; 
+      background: rgba(255,255,255,0.03); 
+    }
+    .pair-player { font-size: 0.85rem; line-height: 1.35; font-weight: normal; color: #f8fafc; word-break: break-word; }
+    .vs-divider { text-align: center; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin: -2px 0; }
 
-    .sets-box { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-    .sets-header { display: flex; gap: 6px; font-size: 0.72rem; color: var(--text-muted); font-weight: bold; }
-    .set-col-label { width: 52px; text-align: center; }
-    .sets-inputs { display: flex; gap: 6px; }
-    .set-input-group { display: flex; flex-direction: column; gap: 4px; }
-    .score-input { width: 52px; height: 32px; text-align: center; background: #070b13; border: 1px solid var(--border); color: #fff; border-radius: 6px; font-weight: bold; font-size: 0.95rem; }
+    /* Wprowadzanie gemów - optymalizacja pod dotyk */
+    .sets-box { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      background: rgba(0,0,0,0.25);
+      padding: 8px;
+      border-radius: 8px;
+      gap: 6px; 
+    }
+    .sets-header { display: flex; gap: 8px; font-size: 0.72rem; color: var(--text-muted); font-weight: bold; }
+    .set-col-label { width: 50px; text-align: center; }
+    .sets-inputs { display: flex; gap: 8px; }
+    .set-input-group { display: flex; flex-direction: column; gap: 6px; }
+    
+    .score-input { 
+      width: 50px; 
+      height: 42px; /* Wygodny touch target na kciuk */
+      text-align: center; 
+      background: #070b13; 
+      border: 1px solid var(--border); 
+      color: #fff; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      font-size: 1.1rem; 
+      -webkit-appearance: none;
+    }
 
-    .match-meta-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; font-size: 0.82rem; }
-    .meta-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .match-meta-bar { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+      border-top: 1px solid rgba(255,255,255,0.08); 
+      padding-top: 10px; 
+    }
+    @media(min-width: 720px) {
+      .match-meta-bar { flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+
+    .meta-inputs { display: flex; flex-direction: column; gap: 6px; }
+    @media(min-width: 720px) {
+      .meta-inputs { flex-direction: row; align-items: center; gap: 8px; }
+    }
     .meta-label { color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
     
-    .match-actions { display: flex; gap: 8px; align-items: center; }
-    .btn-save { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
-    .btn-save:hover { background: #16a34a; }
-    .btn-clear { background: #ef4444; color: #fff; font-weight: bold; border: none; padding: 7px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.78rem; }
-    .btn-clear:hover { background: #dc2626; }
-
-    .match-summary-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 0.82rem; }
+    .match-actions { 
+      display: flex; 
+      gap: 8px; 
+      align-items: center; 
+      justify-content: space-between; 
+      flex-wrap: wrap; 
+    }
+    .btn-save { 
+      flex: 1; 
+      background: var(--accent); 
+      color: #000; 
+      font-weight: bold; 
+      border: none; 
+      height: 42px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-size: 0.9rem; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+    .btn-clear { 
+      background: #ef4444; 
+      color: #fff; 
+      font-weight: bold; 
+      border: none; 
+      height: 42px; 
+      padding: 0 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-size: 0.75rem; 
+      white-space: nowrap;
+    }
+    .match-summary-badge { 
+      width: 100%; 
+      text-align: center; 
+      font-weight: bold; 
+      padding: 5px 8px; 
+      border-radius: 4px; 
+      font-size: 0.8rem; 
+      margin-bottom: 2px;
+    }
+    @media(min-width: 720px) {
+      .match-summary-badge { width: auto; margin-bottom: 0; }
+      .btn-save { flex: initial; padding: 0 20px; }
+    }
     .score-completed { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #16a34a; }
 
     /* KALENDARZ DOSTĘPNOŚCI */
-    .calendar-wrapper { overflow-x: auto; padding-bottom: 8px; }
+    .calendar-wrapper { 
+      overflow-x: auto; 
+      -webkit-overflow-scrolling: touch; 
+      padding-bottom: 8px; 
+      margin: 0 -4px;
+    }
     .cal-table { width: max-content; border-collapse: separate; border-spacing: 2px; }
     .cal-table th, .cal-table td { padding: 4px 5px; font-size: 0.74rem; text-align: center; }
-    .cal-sticky-col { position: sticky; left: 0; background: #131b2e; z-index: 2; text-align: left; font-weight: normal; min-width: 190px; border-right: 2px solid var(--border); }
-    .cal-slot-btn { width: 34px; height: 26px; border-radius: 4px; border: 1px solid #2d3b55; background: #1e293b; cursor: pointer; transition: 0.15s; }
+    .cal-sticky-col { 
+      position: sticky; 
+      left: 0; 
+      background: #131b2e; 
+      z-index: 2; 
+      text-align: left; 
+      font-weight: normal; 
+      min-width: 180px; 
+      border-right: 2px solid var(--border); 
+      white-space: nowrap;
+    }
+    .cal-slot-btn { 
+      width: 36px; 
+      height: 32px; /* Zwiększone pod wygodny dotyk */
+      border-radius: 4px; 
+      border: 1px solid #2d3b55; 
+      background: #1e293b; 
+      cursor: pointer; 
+    }
     .cal-slot-btn.available { background: #15803d; border-color: #22c55e; }
     .cal-slot-btn.unavailable { background: #991b1b; border-color: #ef4444; }
 
     /* KOMUNIKATY TOAST */
     .toast-alert {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       background: #dc2626;
       color: #fff;
       padding: 12px 20px;
       border-radius: 8px;
       font-weight: bold;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6);
       z-index: 9999;
       display: none;
-      animation: fadeIn 0.2s;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      font-size: 0.9rem;
     }
     .toast-success { background: #16a34a !important; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- 1. TABELA INDYWIDUALNA -->
     <div class="card">
-      <h2 style="font-size: 1.5rem; text-align: center; border-bottom: none; margin-bottom: 12px;">🎾 PORANNA LIGA PADLA #02</h2>
+      <h2 style="font-size: 1.35rem; text-align: center; border-bottom: none; margin-bottom: 8px;">🎾 PORANNA LIGA PADLA #02</h2>
       <div id="sync-indicator">⏳ Pobieranie wyników z arkusza...</div>
       
       <div class="table-responsive">
         <table>
           <thead>
             <tr>
-              <th style="width: 32px;">#</th>
+              <th style="width: 28px;">#</th>
               <th style="text-align: left;">Zawodnik</th>
               <th>Mecze</th>
               <th>Gemy +</th>
               <th>Gemy -</th>
-              <th>Stosunek gemów</th>
-              <th>Punkty (sety)</th>
+              <th>Bilans</th>
+              <th>Punkty</th>
             </tr>
           </thead>
           <tbody id="standings-body"></tbody>
@@ -158,14 +300,14 @@
 
     <!-- 2. TERMINARZ -->
     <div class="card">
-      <h2>Terminarz Rozgrywek (12 Kolejek / 72 Mecze)</h2>
+      <h2>Terminarz (12 Kolejek / 72 Mecze)</h2>
       
       <div class="filter-bar">
-        <label for="player-filter">🔍 FILTRUJ MECZE:</label>
+        <label for="player-filter">🔍 FILTRUJ PO ZAWODNIKU:</label>
         <select id="player-filter" onchange="applyPlayerFilter()">
           <option value="">Wszyscy zawodnicy (pokaż całość)</option>
         </select>
-        <span id="filtered-count" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+        <span id="filtered-count" style="font-size: 0.78rem; color: var(--text-muted);"></span>
       </div>
 
       <div id="schedule-container"></div>
@@ -174,8 +316,8 @@
     <!-- 3. DOSTĘPNOŚĆ -->
     <div class="card">
       <h2 class="title-center">DOSTĘPNOŚĆ ZAWODNIKÓW</h2>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -8px; text-align: center;">
-        Kliknij w kafelek: <strong>Szary</strong> (nieokreślony) ➔ <strong>Zielony</strong> (dostępny) ➔ <strong>Czerwony</strong> (niedostępny). Przesuwaj tabelę w prawo.
+      <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: -6px; text-align: center;">
+        Dotknij kafelek: <strong>Szary</strong> ➔ <strong>Zielony</strong> (dostępny) ➔ <strong>Czerwony</strong> (niedostępny). Przesuwaj w prawo.
       </p>
       <div class="calendar-wrapper">
         <table class="cal-table">
@@ -315,26 +457,7 @@
         }
       }
 
-      const input1 = document.getElementById(`m${matchId}-s${setIdx}-p1`);
-      const input2 = document.getElementById(`m${matchId}-s${setIdx}-p2`);
-      if (input1) input1.value = setObj.s1;
-      if (input2) input2.value = setObj.s2;
-      updateSetScoreDisplay(matchId);
-    }
-
-    function updateSetScoreDisplay(matchId) {
-      const match = matchesData.find(m => m.id === matchId);
-      if (!match) return;
-      let p1Sets = 0, p2Sets = 0;
-      match.scores.forEach(s => {
-        const g1 = parseInt(s.s1, 10);
-        const g2 = parseInt(s.s2, 10);
-        if (!isNaN(g1) && !isNaN(g2)) {
-          if (g1 > g2) p1Sets++;
-          else if (g2 > g1) p2Sets++;
-        }
-      });
-      const badge = document.getElementById(`m${matchId}-summary`);
+      const input1 = document.getElementById(`m${matchId}-s${setIdx}-p1`);       const input2 = document.getElementById(`m${matchId}-s${setIdx}-p2`);       if (input1) input1.value = setObj.s1;       if (input2) input2.value = setObj.s2;       updateSetScoreDisplay(matchId);     }      function updateSetScoreDisplay(matchId) {       const match = matchesData.find(m => m.id === matchId);       if (!match) return;       let p1Sets = 0, p2Sets = 0;       match.scores.forEach(s => {         const g1 = parseInt(s.s1, 10);         const g2 = parseInt(s.s2, 10);         if (!isNaN(g1) && !isNaN(g2)) {           if (g1 > g2) p1Sets++;           else if (g2 > g1) p2Sets++;         }       });       const badge = document.getElementById(`m${matchId}-summary`);
       if (badge) {
         badge.textContent = `Sety: ${p1Sets} -${p2Sets}`;
       }
@@ -344,8 +467,7 @@
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
 
-      const dateVal = document.getElementById(`m${matchId}-date`).value;
-      const reporterVal = document.getElementById(`m${matchId}-reporter`).value;
+      const dateVal = document.getElementById(`m${matchId}-date`).value;       const reporterVal = document.getElementById(`m${matchId}-reporter`).value;
 
       let allSetsFilled = true;
       for (let i = 0; i < 3; i++) {
@@ -412,7 +534,6 @@
       });
 
       matchesData.forEach(m => {
-        // Mecz wlicza się do tabeli jeśli ma status completed lub 3 rozegrane sety
         const hasAll3Sets = m.scores && m.scores.every(s => s.s1 !== "" && s.s2 !== "");
         if (!m.completed && !hasAll3Sets) return;
 
@@ -463,10 +584,7 @@
         let diffFormatted = "0";
         let diffClass = "badge-diff-zero";
         if (diff > 0) {
-          diffFormatted = `+${diff}`;
-          diffClass = "badge-diff-pos";
-        } else if (diff < 0) {
-          diffFormatted = `${diff}`;
+          diffFormatted = `+${diff}`;           diffClass = "badge-diff-pos";         } else if (diff < 0) {           diffFormatted = `${diff}`;
           diffClass = "badge-diff-neg";
         }
 
@@ -542,16 +660,16 @@
                 </div>
                 <div class="sets-inputs">
                   <div class="set-input-group">
-                    <input type="number" id="m${m.id}-s0-p1" class="score-input" min="0" max="7" value="${m.scores[0].s1}" oninput="onScoreInput(${m.id}, 0, 1, this.value)" placeholder="P1" />
-                    <input type="number" id="m${m.id}-s0-p2" class="score-input" min="0" max="7" value="${m.scores[0].s2}" oninput="onScoreInput(${m.id}, 0, 2, this.value)" placeholder="P2" />
+                    <input type="number" inputmode="numeric" id="m${m.id}-s0-p1" class="score-input" min="0" max="7" value="${m.scores[0].s1}" oninput="onScoreInput(${m.id}, 0, 1, this.value)" placeholder="P1" />
+                    <input type="number" inputmode="numeric" id="m${m.id}-s0-p2" class="score-input" min="0" max="7" value="${m.scores[0].s2}" oninput="onScoreInput(${m.id}, 0, 2, this.value)" placeholder="P2" />
                   </div>
                   <div class="set-input-group">
-                    <input type="number" id="m${m.id}-s1-p1" class="score-input" min="0" max="7" value="${m.scores[1].s1}" oninput="onScoreInput(${m.id}, 1, 1, this.value)" placeholder="P1" />
-                    <input type="number" id="m${m.id}-s1-p2" class="score-input" min="0" max="7" value="${m.scores[1].s2}" oninput="onScoreInput(${m.id}, 1, 2, this.value)" placeholder="P2" />
+                    <input type="number" inputmode="numeric" id="m${m.id}-s1-p1" class="score-input" min="0" max="7" value="${m.scores[1].s1}" oninput="onScoreInput(${m.id}, 1, 1, this.value)" placeholder="P1" />
+                    <input type="number" inputmode="numeric" id="m${m.id}-s1-p2" class="score-input" min="0" max="7" value="${m.scores[1].s2}" oninput="onScoreInput(${m.id}, 1, 2, this.value)" placeholder="P2" />
                   </div>
                   <div class="set-input-group">
-                    <input type="number" id="m${m.id}-s2-p1" class="score-input" min="0" max="7" value="${m.scores[2].s1}" oninput="onScoreInput(${m.id}, 2, 1, this.value)" placeholder="P1" />
-                    <input type="number" id="m${m.id}-s2-p2" class="score-input" min="0" max="7" value="${m.scores[2].s2}" oninput="onScoreInput(${m.id}, 2, 2, this.value)" placeholder="P2" />
+                    <input type="number" inputmode="numeric" id="m${m.id}-s2-p1" class="score-input" min="0" max="7" value="${m.scores[2].s1}" oninput="onScoreInput(${m.id}, 2, 1, this.value)" placeholder="P1" />
+                    <input type="number" inputmode="numeric" id="m${m.id}-s2-p2" class="score-input" min="0" max="7" value="${m.scores[2].s2}" oninput="onScoreInput(${m.id}, 2, 2, this.value)" placeholder="P2" />
                   </div>
                 </div>
               </div>
@@ -582,7 +700,7 @@
 
       const countSpan = document.getElementById("filtered-count");
       if (filter) {
-        countSpan.textContent = `(Wyświetlono ${filteredMatches} z 72 meczów dla: ${filter})`;
+        countSpan.textContent = `(${filteredMatches} meczów dla wybranego gracza)`;
       } else {
         countSpan.textContent = ``;
       }

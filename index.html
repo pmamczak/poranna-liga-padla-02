@@ -826,7 +826,7 @@ if (status === "available") {
     async function loadDataFromSheets() {
       const indicator = document.getElementById("sync-indicator");
       try {
-        const res = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
+        const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
         const data = await res.json();
 
         // 1. Aktualizacja meczów
@@ -847,13 +847,10 @@ if (status === "available") {
           renderSchedule();
         }
 
-        // 2. Aktualizacja dostępności i ponowne wyrenderowanie kalendarza
-       if (data.availability !== undefined) {
-  // Arkusz jest jedynym źródłem prawdy - nadpisujemy stan lokalny tym, co faktycznie jest w arkuszu:
-  availabilityData = data.availability || {};
-  localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
-  renderAvailabilityCalendar();
-}
+        // 2. Nadpisanie dostępności stanem z arkusza (czyści stare kafelki)
+        availabilityData = data.availability || {};
+        localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
+        renderAvailabilityCalendar();
 
         if (indicator) {
           indicator.textContent = "🟢 Połączono z arkuszem Google (dane aktualne)";

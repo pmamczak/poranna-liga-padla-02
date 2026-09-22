@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PORANNA LIGA PADLA #02</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131b2e;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #23314e;
+      --accent: #22c55e;
+      
+      /* Kolory kolejki nieparzystej (granat) */
+      --round-odd-bg: #111a2f;
+      --round-odd-border: #1e293b;
+      --round-odd-header: #38bdf8;
+      --round-odd-badge: #0369a1;
+
+      /* Kolory kolejki parzystej (ciepły pomarańcz / bursztyn) */
+      --round-even-bg: #261b11;
+      --round-even-border: #452a12;
+      --round-even-header: #fb923c;
+      --round-even-badge: #c2410c;
+    }
+
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); margin: 0; padding: 12px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 1040px; }
+    h1 { text-align: center; color: #fff; font-size: 1.8rem; margin: 16px 0 24px; letter-spacing: 0.5px; }
+    h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+    /* TABELA */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.88rem; }
+    th, td { padding: 9px 8px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
+    td.player-name { text-align: left; font-weight: 600; }
+    .pts { font-weight: bold; color: var(--accent); font-size: 1rem; }
+    .badge-diff-pos { color: #4ade80; font-weight: bold; }
+    .badge-diff-neg { color: #f87171; font-weight: bold; }
+    .badge-diff-zero { color: var(--text-muted); }
+
+    /* FILTR TERMINARZA */
+    .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; background: #0b1120; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); }
+    .filter-bar label { font-weight: bold; font-size: 0.88rem; color: #38bdf8; }
+    select, input[type="date"] { background: #0b1120; border: 1px solid var(--border); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; }
+
+    /* KOLEJKI I MECZE */
+    .round-block { border-radius: 12px; padding: 14px; margin-bottom: 24px; border: 1px solid; }
+    .round-odd { background: var(--round-odd-bg); border-color: var(--round-odd-border); }
+    .round-odd .round-title { color: var(--round-odd-header); }
+    .round-odd .round-badge { background: var(--round-odd-badge); }
+
+    .round-even { background: var(--round-even-bg); border-color: var(--round-even-border); }
+    .round-even .round-title { color: var(--round-even-header); }
+    .round-even .round-badge { background: var(--round-even-badge); }
+
+    .round-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .round-title { font-size: 1.15rem; font-weight: bold; }
+    .round-badge { color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; }
+
+    .match-card { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .match-main { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    @media(max-width: 768px) {
+      .match-main { grid-template-columns: 1fr; }
+    }
+
+    .teams-box { display: flex; flex-direction: column; gap: 6px; }
+    .pair-container { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); }
+    .pair-player { font-size: 0.88rem; line-height: 1.35; }
+    .pair-player.top { font-weight: 600; color: #f8fafc; }
+    .pair-player.sub { color: #cbd5e1; font-size: 0.82rem; }
+    .vs-divider { text-align: center; font-size: 0.72rem; font-weight: 800; color: var(--text-muted); margin: -2px 0; }
+
+    .sets-box { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+    .sets-header { display: flex; gap: 6px; font-size: 0.72rem; color: var(--text-muted); font-weight: bold; }
+    .set-col-label { width: 52px; text-align: center; }
+    .sets-inputs { display: flex; gap: 6px; }
+    .set-input-group { display: flex; flex-direction: column; gap: 4px; }
+    .score-input { width: 52px; height: 32px; text-align: center; background: #070b13; border: 1px solid var(--border); color: #fff; border-radius: 6px; font-weight: bold; font-size: 0.95rem; }
+
+    .match-meta-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; font-size: 0.82rem; }
+    .meta-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .meta-label { color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
+    
+    .btn-save { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
+    .btn-save:hover { background: #16a34a; }
+    .match-summary-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 0.82rem; }
+    .score-completed { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #16a34a; }
+
+    /* KALENDARZ DOSTĘPNOŚCI */
+    .calendar-wrapper { overflow-x: auto; padding-bottom: 8px; }
+    .cal-table { width: max-content; border-collapse: separate; border-spacing: 2px; }
+    .cal-table th, .cal-table td { padding: 4px 5px; font-size: 0.74rem; text-align: center; }
+    .cal-sticky-col { position: sticky; left: 0; background: #131b2e; z-index: 2; text-align: left; font-weight: 600; min-width: 190px; border-right: 2px solid var(--border); }
+    .cal-slot-btn { width: 34px; height: 26px; border-radius: 4px; border: 1px solid #2d3b55; background: #1e293b; cursor: pointer; transition: 0.15s; }
+    .cal-slot-btn.available { background: #15803d; border-color: #22c55e; }
+    .cal-slot-btn.unavailable { background: #991b1b; border-color: #ef4444; }
+
+    /* KOMUNIKAT BŁĘDU WALIDACJI */
+    .toast-alert {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #dc2626;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      z-index: 9999;
+      display: none;
+      animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PORANNA LIGA PADLA #02</h1>
+
+    <!-- 1. TABELA INDYWIDUALNA -->
+    <div class="card">
+      <h2>Tabela Indywidualna (24 Graczy)</h2>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 32px;">#</th>
+              <th style="text-align: left;">Zawodnik</th>
+              <th>Mecze</th>
+              <th>Gemy +</th>
+              <th>Gemy -</th>
+              <th>Stosunek gemów</th>
+              <th>Punkty (sety)</th>
+            </tr>
+          </thead>
+          <tbody id="standings-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. TERMINARZ -->
+    <div class="card">
+      <h2>Terminarz Rozgrywek (12 Kolejek / 72 Mecze)</h2>
+      
+      <div class="filter-bar">
+        <label for="player-filter">🔍 FILTRUJ MECZE:</label>
+        <select id="player-filter" onchange="applyPlayerFilter()">
+          <option value="">Wszyscy zawodnicy (pokaż całość)</option>
+        </select>
+        <span id="filtered-count" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+      </div>
+
+      <div id="schedule-container"></div>
+    </div>
+
+    <!-- 3. DOSTĘPNOŚĆ -->
+    <div class="card">
+      <h2>Dostępność Zawodników (od DZIŚ do 31.12.2026)</h2>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -8px;">
+        Kliknij w kafelek: <strong>Szary</strong> (nieokreślony) ➔ <strong>Zielony</strong> (dostępny) ➔ <strong>Czerwony</strong> (niedostępny). Przesuwaj tabelę w prawo.
+      </p>
+      <div class="calendar-wrapper">
+        <table class="cal-table">
+          <thead>
+            <tr id="cal-dates-head"></tr>
+            <tr id="cal-slots-head"></tr>
+          </thead>
+          <tbody id="cal-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast-alert">Uzupełnij pełne dane</div>
+
+  <script>
+    const TOP_PLAYERS = [
+      "🇵🇱 Marek Kurzyk (5,1)",
+      "🇵🇱 Michał Gaber (4,9)",
+      "🇵🇱 Marcin Owoc (4,7)",
+      "🇵🇱 Przemysław Dawid (4,7)",
+      "🇵🇱 Marcin Górka (4,3)",
+      "🇮🇪 Mark Dalton (4,1)",
+      "🇵🇱 Krzysztof Grzelka (4,0)",
+      "🇵🇱 Zbigniew Grzelka (4,0)",
+      "🇵🇱 Łukasz Osowski (3,9)",
+      "🇵🇱 Filip Kazimierski (3,8)",
+      "🇵🇱 Krzysztof Musielak (3,7)",
+      "🇵🇱 Piotr Wyciechowski (3,7)"
+    ];
+
+    const BOTTOM_PLAYERS = [
+      "🇵🇱 Michał Jaworski (3,6)",
+      "🇵🇱 Marcin Marchwiak (3,5)",
+      "🇵🇱 Tomasz Szumigaj (3,3)",
+      "🇵🇱 Maciej Talko (3,1)",
+      "🇵🇱 Daniel Kuszewski (3,1)",
+      "🇵🇱 Przemysław Mamczak (3,1)",
+      "🇵🇱 Artur Stach (3,0)",
+      "🇵🇱 Marcin Kwiecień (3,0)",
+      "🇨🇴 Eduardo Cortes (2,8)",
+      "🇵🇱 Robert Bartnikiewicz (2,4)",
+      "🇵🇱 Dorian Bestrzyński (2,2)",
+      "🇵🇱 Szymon Krześniak (1,9)"
+    ];
+
+    const ALL_PLAYERS = [...TOP_PLAYERS, ...BOTTOM_PLAYERS];
+
+    // Generowanie zbalansowanego terminarza 12 kolejek x 6 meczów
+    function generateTournamentSchedule() {
+      const schedule = [];
+      const rrPairings = [];
+      // 1-factorization dla 12 graczy TOP
+      for (let rnd = 0; rnd < 11; rnd++) {
+        const roundPairs = [[11, rnd]];
+        for (let i = 1; i <= 5; i++) {
+          const p1 = (rnd + i) % 11;
+          const p2 = (rnd - i + 11) % 11;
+          roundPairs.push([p1, p2]);
+        }
+        rrPairings.push(roundPairs);
+      }
+      rrPairings.push([[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]]);
+
+      let matchId = 1;
+      for (let r = 0; r < 12; r++) {
+        const pairings = rrPairings[r];
+        for (let m = 0; m < pairings.length; m++) {
+          const [t1, t2] = pairings[m];
+          const b1 = (t1 + r) % 12;
+          const b2 = (t2 + r) % 12;
+
+          schedule.push({
+            id: matchId++,
+            round: r + 1,
+            pair1: [TOP_PLAYERS[t1], BOTTOM_PLAYERS[b1]],
+            pair2: [TOP_PLAYERS[t2], BOTTOM_PLAYERS[b2]],
+            scores: [
+              { s1: "", s2: "" },
+              { s1: "", s2: "" },
+              { s1: "", s2: "" }
+            ],
+            date: "",
+            reporter: "",
+            completed: false
+          });
+        }
+      }
+      return schedule;
+    }
+
+    let matchesData = generateTournamentSchedule();
+    let availabilityData = {};
+
+    function initFilterDropdown() {
+      const select = document.getElementById("player-filter");
+      ALL_PLAYERS.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        select.appendChild(opt);
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 3000);
+    }
+
+    // Auto-uzupełnianie gemów według zasad padla (do 6 lub 7-5 / 7-6)
+    function onScoreInput(matchId, setIdx, pairIdx, val) {
+      const match = matchesData.find(m => m.id === matchId);
+      if (!match) return;
+
+      const v = val.trim();
+      const num = parseInt(v, 10);
+      const setObj = match.scores[setIdx];
+
+      if (pairIdx === 1) {
+        setObj.s1 = v;
+        if (!isNaN(num)) {
+          if (num >= 0 && num <= 4) setObj.s2 = "6";
+          else if (num === 5) setObj.s2 = "7";
+          else if (num === 6) setObj.s2 = (setObj.s2 === "7" ? "7" : (setObj.s2 === "6" ? "6" : "4"));
+          else if (num === 7) setObj.s2 = (setObj.s2 === "6" ? "6" : "5");
+        }
+      } else {
+        setObj.s2 = v;
+        if (!isNaN(num)) {
+          if (num >= 0 && num <= 4) setObj.s1 = "6";
+          else if (num === 5) setObj.s1 = "7";
+          else if (num === 6) setObj.s1 = (setObj.s1 === "7" ? "7" : (setObj.s1 === "6" ? "6" : "4"));
+          else if (num === 7) setObj.s1 = (setObj.s1 === "6" ? "6" : "5");
+        }
+      }
+
+      // Aktualizacja pól w DOM
+      document.getElementById(`m${matchId}-s${setIdx}-p1`).value = setObj.s1;
+      document.getElementById(`m${matchId}-s${setIdx}-p2`).value = setObj.s2;
+      updateSetScoreDisplay(matchId);
+    }
+
+    function updateSetScoreDisplay(matchId) {
+      const match = matchesData.find(m => m.id === matchId);
+      let p1Sets = 0, p2Sets = 0;
+      match.scores.forEach(s => {
+        const g1 = parseInt(s.s1, 10);
+        const g2 = parseInt(s.s2, 10);
+        if (!isNaN(g1) && !isNaN(g2)) {
+          if (g1 > g2) p1Sets++;
+          else if (g2 > g1) p2Sets++;
+        }
+      });
+      const badge = document.getElementById(`m${matchId}-summary`);
+      if (badge) {
+        badge.textContent = `Sety: ${p1Sets} -${p2Sets}`;
+      }
+    }
+
+    function saveMatch(matchId) {
+      const match = matchesData.find(m => m.id === matchId);
+      if (!match) return;
+
+      const dateVal = document.getElementById(`m${matchId}-date`).value;
+      const reporterVal = document.getElementById(`m${matchId}-reporter`).value;
+
+      // Sprawdzenie czy wszystkie 3 sety są uzupełnione
+      let allSetsFilled = true;
+      for (let i = 0; i < 3; i++) {
+        const g1 = match.scores[i].s1.trim();
+        const g2 = match.scores[i].s2.trim();
+        if (g1 === "" || g2 === "" || isNaN(parseInt(g1, 10)) || isNaN(parseInt(g2, 10))) {
+          allSetsFilled = false;
+          break;
+        }
+      }
+
+      // WALIDACJA: jeśli brakuje wyników, daty lub osoby wprowadzającej
+      if (!allSetsFilled || !dateVal || !reporterVal) {
+        showToast("Uzupełnij pełne dane");
+        return;
+      }
+
+      match.date = dateVal;
+      match.reporter = reporterVal;
+      match.completed = true;
+
+      // Zapis lokalny
+      localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
+      
+      calculateAndRenderStandings();
+      renderSchedule();
+      showToast("Wynik meczu został poprawnie zapisany!");
+    }
+
+    function calculateAndRenderStandings() {
+      const stats = {};
+      ALL_PLAYERS.forEach(p => {
+        stats[p] = { name: p, matches: 0, gamesWon: 0, gamesLost: 0, setsWon: 0 };
+      });
+
+      matchesData.forEach(m => {
+        if (!m.completed) return;
+
+        let p1Sets = 0, p2Sets = 0;
+        let p1Games = 0, p2Games = 0;
+
+        m.scores.forEach(s => {
+          const g1 = parseInt(s.s1, 10) || 0;
+          const g2 = parseInt(s.s2, 10) || 0;
+          p1Games += g1;
+          p2Games += g2;
+          if (g1 > g2) p1Sets++;
+          else if (g2 > g1) p2Sets++;
+        });
+
+        // Wszyscy czterej gracze w meczu
+        m.pair1.forEach(p => {
+          if (stats[p]) {
+            stats[p].matches++;
+            stats[p].gamesWon += p1Games;
+            stats[p].gamesLost += p2Games;
+            stats[p].setsWon += p1Sets;
+          }
+        });
+
+        m.pair2.forEach(p => {
+          if (stats[p]) {
+            stats[p].matches++;
+            stats[p].gamesWon += p2Games;
+            stats[p].gamesLost += p1Games;
+            stats[p].setsWon += p2Sets;
+          }
+        });
+      });
+
+      const list = Object.values(stats);
+      list.sort((a, b) => {
+        if (b.setsWon !== a.setsWon) return b.setsWon - a.setsWon;
+        const diffB = b.gamesWon - b.gamesLost;
+        const diffA = a.gamesWon - a.gamesLost;
+        if (diffB !== diffA) return diffB - diffA;
+        return b.gamesWon - a.gamesWon;
+      });
+
+      const tbody = document.getElementById("standings-body");
+      tbody.innerHTML = "";
+      list.forEach((s, idx) => {
+        const diff = s.gamesWon - s.gamesLost;
+        let diffFormatted = "0";
+        let diffClass = "badge-diff-zero";
+        if (diff > 0) {
+          diffFormatted = `+${diff}`;
+          diffClass = "badge-diff-pos";
+        } else if (diff < 0) {
+          diffFormatted = `${diff}`;
+          diffClass = "badge-diff-neg";
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td class="player-name">${s.name}</td>
+          <td>${s.matches}</td>
+          <td>${s.gamesWon}</td>
+          <td>${s.gamesLost}</td>
+          <td class="${diffClass}">${diffFormatted}</td>
+          <td class="pts">${s.setsWon}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderSchedule() {
+      const filter = document.getElementById("player-filter").value;
+      const container = document.getElementById("schedule-container");
+      container.innerHTML = "";
+
+      let filteredMatches = 0;
+
+      for (let r = 1; r <= 12; r++) {
+        const roundMatches = matchesData.filter(m => m.round === r);
+        const matchesToShow = filter 
+          ? roundMatches.filter(m => m.pair1.includes(filter) || m.pair2.includes(filter))
+          : roundMatches;
+
+        if (matchesToShow.length === 0) continue;
+        filteredMatches += matchesToShow.length;
+
+        const isOdd = r % 2 !== 0;
+        const roundBox = document.createElement("div");
+        roundBox.className = `round-block ${isOdd ? 'round-odd' : 'round-even'}`;
+
+        roundBox.innerHTML = `
+          <div class="round-header-box">
+            <span class="round-title">Kolejka ${r}</span>
+            <span class="round-badge">${isOdd ? 'Seria Granatowa' : 'Seria Bursztynowa'} (6 Meczów)</span>
+          </div>
+        `;
+
+        matchesToShow.forEach(m => {
+          const matchCard = document.createElement("div");
+          matchCard.className = "match-card";
+
+          const matchPlayers = [...m.pair1, ...m.pair2];
+          let reporterOptions = `<option value="">-- Kto wprowadza wynik? --</option>`;
+          matchPlayers.forEach(p => {
+            reporterOptions += `<option value="${p}" ${m.reporter === p ? "selected" : ""}>${p}</option>`;
+          });
+
+          matchCard.innerHTML = `
+            <div class="match-main">
+              <div class="teams-box">
+                <div class="pair-container">
+                  <div class="pair-player top">${m.pair1[0]}</div>
+                  <div class="pair-player sub">${m.pair1[1]}</div>
+                </div>
+                <div class="vs-divider">VS</div>
+                <div class="pair-container">
+                  <div class="pair-player top">${m.pair2[0]}</div>
+                  <div class="pair-player sub">${m.pair2[1]}</div>
+                </div>
+              </div>
+
+              <div class="sets-box">
+                <div class="sets-header">
+                  <div class="set-col-label">Set 1</div>
+                  <div class="set-col-label">Set 2</div>
+                  <div class="set-col-label">Set 3</div>
+                </div>
+                <div class="sets-inputs">
+                  <div class="set-input-group">
+                    <input type="number" id="m${m.id}-s0-p1" class="score-input" min="0" max="7" value="${m.scores[0].s1}" oninput="onScoreInput(${m.id}, 0, 1, this.value)" placeholder="P1" />
+                    <input type="number" id="m${m.id}-s0-p2" class="score-input" min="0" max="7" value="${m.scores[0].s2}" oninput="onScoreInput(${m.id}, 0, 2, this.value)" placeholder="P2" />
+                  </div>
+                  <div class="set-input-group">
+                    <input type="number" id="m${m.id}-s1-p1" class="score-input" min="0" max="7" value="${m.scores[1].s1}" oninput="onScoreInput(${m.id}, 1, 1, this.value)" placeholder="P1" />
+                    <input type="number" id="m${m.id}-s1-p2" class="score-input" min="0" max="7" value="${m.scores[1].s2}" oninput="onScoreInput(${m.id}, 1, 2, this.value)" placeholder="P2" />
+                  </div>
+                  <div class="set-input-group">
+                    <input type="number" id="m${m.id}-s2-p1" class="score-input" min="0" max="7" value="${m.scores[2].s1}" oninput="onScoreInput(${m.id}, 2, 1, this.value)" placeholder="P1" />
+                    <input type="number" id="m${m.id}-s2-p2" class="score-input" min="0" max="7" value="${m.scores[2].s2}" oninput="onScoreInput(${m.id}, 2, 2, this.value)" placeholder="P2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="match-meta-bar">
+              <div class="meta-inputs">
+                <span class="meta-label">Data:</span>
+                <input type="date" id="m${m.id}-date" value="${m.date}" />
+                <span class="meta-label">Wprowadził:</span>
+                <select id="m${m.id}-reporter">${reporterOptions}</select>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <span id="m${m.id}-summary" class="match-summary-badge ${m.completed ? 'score-completed' : ''}">
+                  ${m.completed ? 'Mecz zakończony' : 'W trakcie / Do rozegrania'}
+                </span>
+                <button class="btn-save" onclick="saveMatch(${m.id})">ZAPISZ</button>
+              </div>
+            </div>
+          `;
+
+          roundBox.appendChild(matchCard);
+        });
+
+        container.appendChild(roundBox);
+      }
+
+      const countSpan = document.getElementById("filtered-count");
+      if (filter) {
+        countSpan.textContent = `(Wyświetlono ${filteredMatches} z 72 meczów dla: ${filter})`;
+      } else {
+        countSpan.textContent = ``;
+      }
+    }
+
+    function applyPlayerFilter() {
+      renderSchedule();
+    }
+
+    // 3. KALENDARZ DOSTĘPNOŚCI (OD DZIŚ DO 31.12.2026)
+    const TIME_SLOTS = [
+      "7:00-7:30", "7:30-8:00", "8:00-8:30", "8:30-9:00", 
+      "9:00-9:30", "9:30-10:00", "10:00-10:30"
+    ];
+
+    function renderAvailabilityCalendar() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endDate = new Date(2026, 11, 31); // 31 grudnia 2026
+
+      const saved = localStorage.getItem("padel_availability_p02");
+      if (saved) {
+        try { availabilityData = JSON.parse(saved); } catch (e) {}
+      }
+
+      // Nagłówki dni
+      const headDates = document.getElementById("cal-dates-head");
+      const headSlots = document.getElementById("cal-slots-head");
+      headDates.innerHTML = `<th class="cal-sticky-col" rowspan="2">Zawodnik</th>`;
+      headSlots.innerHTML = "";
+
+      let cur = new Date(today);
+      const datesList = [];
+      const daysLimit = 100; // Renderujemy w bezpiecznych partiach
+      let count = 0;
+
+      while (cur <= endDate && count < daysLimit) {
+        const dateStr = cur.toISOString().split("T")[0];
+        const dayLabel = cur.toLocaleDateString("pl-PL", { weekday: "short", day: "numeric", month: "numeric" });
+        datesList.push(dateStr);
+
+        const thDate = document.createElement("th");
+        thDate.colSpan = TIME_SLOTS.length;
+        thDate.style.borderLeft = "1px solid var(--border)";
+        thDate.textContent = dayLabel;
+        headDates.appendChild(thDate);
+
+        TIME_SLOTS.forEach(slot => {
+          const thSlot = document.createElement("th");
+          thSlot.textContent = slot.split("-")[0];
+          headSlots.appendChild(thSlot);
+        });
+
+        cur.setDate(cur.getDate() + 1);
+        count++;
+      }
+
+      const tbody = document.getElementById("cal-body");
+      tbody.innerHTML = "";
+
+      ALL_PLAYERS.forEach(player => {
+        const tr = document.createElement("tr");
+        const tdName = document.createElement("td");
+        tdName.className = "cal-sticky-col";
+        tdName.textContent = player;
+        tr.appendChild(tdName);
+
+        datesList.forEach(dateStr => {
+          TIME_SLOTS.forEach(slot => {
+            const td = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.className = "cal-slot-btn";
+            const key = `${player}|${dateStr}|${slot}`;
+            const status = availabilityData[key] || "none";
+
+            if (status === "available") btn.classList.add("available");
+            else if (status === "unavailable") btn.classList.add("unavailable");
+
+            btn.onclick = () => {
+              let nextStatus = "available";
+              if (btn.classList.contains("available")) nextStatus = "unavailable";
+              else if (btn.classList.contains("unavailable")) nextStatus = "none";
+
+              btn.classList.remove("available", "unavailable");
+              if (nextStatus === "available") btn.classList.add("available");
+              else if (nextStatus === "unavailable") btn.classList.add("unavailable");
+
+              if (nextStatus === "none") delete availabilityData[key];
+              else availabilityData[key] = nextStatus;
+
+              localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
+            };
+
+            td.appendChild(btn);
+            tr.appendChild(td);
+          });
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Inicjalizacja aplikacji
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedMatches = localStorage.getItem("padel_matches_p02");
+      if (savedMatches) {
+        try { matchesData = JSON.parse(savedMatches); } catch (e) {}
+      }
+
+      initFilterDropdown();
+      calculateAndRenderStandings();
+      renderSchedule();
+      renderAvailabilityCalendar();
+    });
+  </script>
+</body>
+</html>

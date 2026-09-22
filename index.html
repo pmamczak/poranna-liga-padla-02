@@ -788,8 +788,12 @@
             const key = `${player}|${dateStr}|${slot}`;
             const status = availabilityData[key] || "none";
 
-            if (status === "available") btn.classList.add("available");
-            else if (status === "unavailable") btn.classList.add("unavailable");
+            btn.className = "cal-slot-btn"; // Resetuje do szarego
+if (status === "available") {
+  btn.classList.add("available");
+} else if (status === "unavailable") {
+  btn.classList.add("unavailable");
+}
 
             btn.onclick = () => {
               let nextStatus = "available";
@@ -844,11 +848,12 @@
         }
 
         // 2. Aktualizacja dostępności i ponowne wyrenderowanie kalendarza
-        if (data.availability && Object.keys(data.availability).length > 0) {
-          availabilityData = data.availability;
-          localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
-          renderAvailabilityCalendar();
-        }
+       if (data.availability !== undefined) {
+  // Arkusz jest jedynym źródłem prawdy - nadpisujemy stan lokalny tym, co faktycznie jest w arkuszu:
+  availabilityData = data.availability || {};
+  localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
+  renderAvailabilityCalendar();
+}
 
         if (indicator) {
           indicator.textContent = "🟢 Połączono z arkuszem Google (dane aktualne)";

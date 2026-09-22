@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎾 PORANNA LIGA PADLA #02</title>
+  <div id="sync-indicator" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: -12px; margin-bottom: 16px;">
+  ⏳ Pobieranie wyników z arkusza...
+</div>
   <style>
     :root {
       --bg: #090d16;
@@ -357,7 +360,7 @@
       renderSchedule();
       showToast("Wynik zapisany w arkuszu!", true);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec") {
         fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
@@ -386,7 +389,7 @@
       renderSchedule();
       showToast("Dane wyczyszczone", true);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec") {
         fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
@@ -658,7 +661,7 @@
               localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
 
               // Wysyłka dostępności do Google Sheets
-              if (SCRIPT_URL && SCRIPT_URL !== "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") {
+              if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec") {
                 fetch(SCRIPT_URL, {
                   method: "POST",
                   mode: "no-cors",
@@ -677,51 +680,46 @@
       });
     }
 
-    // POBIERANIE DANYCH Z GOOGLE SHEETS PRZY STARTE
+// POBIERANIE DANYCH Z GOOGLE SHEETS PRZY STARTE
     async function loadDataFromSheets() {
-      if (!SCRIPT_URL || SCRIPT_URL === "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") return;
+      if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec")) return;
+      
+      const statusBadge = document.getElementById("sync-indicator");
+      if (statusBadge) statusBadge.textContent = "⏳ Pobieranie wyników z arkusza...";
+
       try {
-        const res = await fetch(SCRIPT_URL);
+        const res = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
         const data = await res.json();
+
         if (data.matches && data.matches.length > 0) {
           data.matches.forEach(sheetMatch => {
-            const idx = matchesData.findIndex(m => m.id === sheetMatch.id);
+            const idx = matchesData.findIndex(m => Number(m.id) === Number(sheetMatch.id));
             if (idx !== -1) {
-              matchesData[idx] = sheetMatch;
+              matchesData[idx] = {
+                ...matchesData[idx],
+                ...sheetMatch,
+                // Zabezpieczenie: jeśli mecz ma komplet wyników, traktuj jako completed
+                completed: sheetMatch.completed === true || sheetMatch.completed === "true"
+              };
             }
           });
+
           localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
           calculateAndRenderStandings();
           renderSchedule();
         }
+
         if (data.availability && Object.keys(data.availability).length > 0) {
           availabilityData = data.availability;
           localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
           renderAvailabilityCalendar();
         }
+
+        if (statusBadge) statusBadge.textContent = "🟢 Połączono z arkuszem Google";
       } catch (err) {
-        console.warn("Wczytano dane z pamięci lokalnej (brak połączenia lub inicjalizacja arkusza)");
+        console.warn("Błąd pobierania danych z Arkusza:", err);
+        if (statusBadge) statusBadge.textContent = "⚠️ Tryb offline (dane lokalne)";
       }
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      // 1. Wczytaj najpierw pamięć lokalną (żeby strona nie była pusta)
-      const savedMatches = localStorage.getItem("padel_matches_p02");
-      if (savedMatches) {
-        try { matchesData = JSON.parse(savedMatches); } catch (e) {}
-      }
-      const savedAvail = localStorage.getItem("padel_availability_p02");
-      if (savedAvail) {
-        try { availabilityData = JSON.parse(savedAvail); } catch (e) {}
-      }
-
-      initFilterDropdown();
-      calculateAndRenderStandings();
-      renderSchedule();
-      renderAvailabilityCalendar();
-
-      // 2. Pobierz najświeższe dane z Arkusza Google dla każdego gracza
-      loadDataFromSheets();
     });
   </script>
 </body>

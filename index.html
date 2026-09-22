@@ -217,15 +217,38 @@
     }
     .score-completed { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #16a34a; }
 
-    /* KALENDARZ DOSTĘPNOŚCI */
+    /* KALENDARZ DOSTĘPNOŚCI - USZTYWNIONE NAGŁÓWKI I KOLUMNA */
     .calendar-wrapper { 
       overflow-x: auto; 
+      overflow-y: auto; 
+      max-height: 520px; /* Wysokość okna kalendarza - pozwala przewijać listę graczy */
       -webkit-overflow-scrolling: touch; 
       padding-bottom: 8px; 
       margin: 0 -4px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      position: relative;
     }
     .cal-table { width: max-content; border-collapse: separate; border-spacing: 2px; }
     .cal-table th, .cal-table td { padding: 4px 5px; font-size: 0.74rem; text-align: center; }
+    
+    /* Przyklejone wiersze z datami i godzinami */
+    #cal-dates-head th {
+      position: sticky;
+      top: 0;
+      background: #1e293b;
+      z-index: 3;
+      border-bottom: 1px solid var(--border);
+    }
+    #cal-slots-head th {
+      position: sticky;
+      top: 26px; /* Przykleja się tuż pod wierszem z datami */
+      background: #131b2e;
+      z-index: 3;
+      border-bottom: 2px solid var(--border);
+    }
+
+    /* Przyklejona kolumna z zawodnikami (lewa strona) */
     .cal-sticky-col { 
       position: sticky; 
       left: 0; 
@@ -236,6 +259,14 @@
       min-width: 180px; 
       border-right: 2px solid var(--border); 
       white-space: nowrap;
+    }
+
+    /* Lewy górny róg ("Zawodnik") - przyklejony i w pionie, i w poziomie */
+    #cal-dates-head th.cal-sticky-col {
+      top: 0;
+      left: 0;
+      z-index: 5;
+      background: #1e293b;
     }
     .cal-slot-btn { 
       width: 36px; 

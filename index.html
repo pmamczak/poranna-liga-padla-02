@@ -13,12 +13,12 @@
       --border: #23314e;
       --accent: #22c55e;
       
-      /* Kolory kolejki nieparzystej (granat) */
+      /* Kolejka nieparzysta (granat) */
       --round-odd-bg: #111a2f;
       --round-odd-border: #1e293b;
       --round-odd-header: #38bdf8;
 
-      /* Kolory kolejki parzystej (ciepły pomarańcz / bursztyn) */
+      /* Kolejka parzysta (ciepły pomarańcz / bursztyn) */
       --round-even-bg: #261b11;
       --round-even-border: #452a12;
       --round-even-header: #fb923c;
@@ -27,7 +27,6 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); margin: 0; padding: 12px; display: flex; justify-content: center; }
     .container { width: 100%; max-width: 1040px; }
-    h1 { text-align: center; color: #fff; font-size: 1.8rem; margin: 16px 0 24px; letter-spacing: 0.5px; }
     h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     .title-center { text-align: center; border-bottom: none; }
 
@@ -68,7 +67,6 @@
 
     .teams-box { display: flex; flex-direction: column; gap: 6px; }
     .pair-container { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); }
-    /* Gracze bez pogrubień – jednolity styl */
     .pair-player { font-size: 0.88rem; line-height: 1.35; font-weight: normal; color: #f8fafc; }
     .vs-divider { text-align: center; font-size: 0.72rem; font-weight: 800; color: var(--text-muted); margin: -2px 0; }
 
@@ -101,7 +99,7 @@
     .cal-slot-btn.available { background: #15803d; border-color: #22c55e; }
     .cal-slot-btn.unavailable { background: #991b1b; border-color: #ef4444; }
 
-    /* KOMUNIKAT BŁĘDU WALIDACJI */
+    /* KOMUNIKATY */
     .toast-alert {
       position: fixed;
       bottom: 24px;
@@ -116,12 +114,13 @@
       display: none;
       animation: fadeIn 0.2s;
     }
+    .toast-success { background: #16a34a !important; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- 1. TABELA INDYWIDUALNA Z NOWYM TYTUŁEM -->
+    <!-- 1. TABELA INDYWIDUALNA -->
     <div class="card">
       <h2 style="font-size: 1.5rem; text-align: center; border-bottom: none; margin-bottom: 20px;">🎾 PORANNA LIGA PADLA #02</h2>
       <div class="table-responsive">
@@ -178,6 +177,11 @@
   <div id="toast" class="toast-alert">Uzupełnij pełne dane</div>
 
   <script>
+    // =========================================================================
+    // ⚠️ TUTAJ WPROWADŹ SWÓJ ADRES Z GOOGLE APPS SCRIPT (zakończony na /exec):
+    // =========================================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuOxgdPYmkCheR6MiABi5BxLNSO66nHYwEGq6Xwt33Y6zFy_0PfhntpCh2HvTZkWwY2g/exec";
+
     const TOP_PLAYERS = [
       "🇵🇱 Marek Kurzyk (5,1)",
       "🇵🇱 Michał Gaber (4,9)",
@@ -264,9 +268,11 @@
       });
     }
 
-    function showToast(msg) {
+    function showToast(msg, isSuccess = false) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
+      if (isSuccess) toast.classList.add("toast-success");
+      else toast.classList.remove("toast-success");
       toast.style.display = "block";
       setTimeout(() => { toast.style.display = "none"; }, 3000);
     }
@@ -319,6 +325,7 @@
       }
     }
 
+    // ZAPIS MECZU (LOKALNIE + GOOGLE SHEETS)
     function saveMatch(matchId) {
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
@@ -337,7 +344,7 @@
       }
 
       if (!allSetsFilled || !dateVal || !reporterVal) {
-        showToast("Uzupełnij pełne dane");
+        showToast("Uzupełnij pełne dane", false);
         return;
       }
 
@@ -346,13 +353,21 @@
       match.completed = true;
 
       localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
-      
       calculateAndRenderStandings();
       renderSchedule();
-      showToast("Wynik meczu został poprawnie zapisany!");
+      showToast("Wynik zapisany w arkuszu!", true);
+
+      if (SCRIPT_URL && SCRIPT_URL !== "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "save_match", match: match })
+        }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
+      }
     }
 
-    // Zerowanie meczu
+    // CZYSZCZENIE MECZU (LOKALNIE + GOOGLE SHEETS)
     function clearMatch(matchId) {
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
@@ -367,10 +382,18 @@
       match.completed = false;
 
       localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
-
       calculateAndRenderStandings();
       renderSchedule();
-      showToast("Dane meczu zostały wyczyszczone");
+      showToast("Dane wyczyszczone", true);
+
+      if (SCRIPT_URL && SCRIPT_URL !== "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "save_match", match: match })
+        }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
+      }
     }
 
     function calculateAndRenderStandings() {
@@ -534,7 +557,7 @@
                 <span id="m${m.id}-summary" class="match-summary-badge ${m.completed ? 'score-completed' : ''}">
                   ${m.completed ? 'Mecz zakończony' : 'Do rozegrania'}
                 </span>
-                <button class="btn-clear" onclick="clearMatch(${m.id})" title="Zeruj wynik tego meczu">WYCZYŚĆ DANE</button>
+                <button class="btn-clear" onclick="clearMatch(${m.id})" title="Zeruj wynik">WYCZYŚĆ DANE</button>
                 <button class="btn-save" onclick="saveMatch(${m.id})">ZAPISZ</button>
               </div>
             </div>
@@ -567,11 +590,6 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const endDate = new Date(2026, 11, 31);
-
-      const saved = localStorage.getItem("padel_availability_p02");
-      if (saved) {
-        try { availabilityData = JSON.parse(saved); } catch (e) {}
-      }
 
       const headDates = document.getElementById("cal-dates-head");
       const headSlots = document.getElementById("cal-slots-head");
@@ -638,6 +656,16 @@
               else availabilityData[key] = nextStatus;
 
               localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
+
+              // Wysyłka dostępności do Google Sheets
+              if (SCRIPT_URL && SCRIPT_URL !== "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") {
+                fetch(SCRIPT_URL, {
+                  method: "POST",
+                  mode: "no-cors",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ action: "save_availability", key: key, status: nextStatus })
+                }).catch(err => console.error("Błąd zapisu dostępności:", err));
+              }
             };
 
             td.appendChild(btn);
@@ -649,16 +677,51 @@
       });
     }
 
+    // POBIERANIE DANYCH Z GOOGLE SHEETS PRZY STARTE
+    async function loadDataFromSheets() {
+      if (!SCRIPT_URL || SCRIPT_URL === "TUTAJ_WKLEJ_TWOJ_URL_Z_APPS_SCRIPT") return;
+      try {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        if (data.matches && data.matches.length > 0) {
+          data.matches.forEach(sheetMatch => {
+            const idx = matchesData.findIndex(m => m.id === sheetMatch.id);
+            if (idx !== -1) {
+              matchesData[idx] = sheetMatch;
+            }
+          });
+          localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
+          calculateAndRenderStandings();
+          renderSchedule();
+        }
+        if (data.availability && Object.keys(data.availability).length > 0) {
+          availabilityData = data.availability;
+          localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
+          renderAvailabilityCalendar();
+        }
+      } catch (err) {
+        console.warn("Wczytano dane z pamięci lokalnej (brak połączenia lub inicjalizacja arkusza)");
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
+      // 1. Wczytaj najpierw pamięć lokalną (żeby strona nie była pusta)
       const savedMatches = localStorage.getItem("padel_matches_p02");
       if (savedMatches) {
         try { matchesData = JSON.parse(savedMatches); } catch (e) {}
+      }
+      const savedAvail = localStorage.getItem("padel_availability_p02");
+      if (savedAvail) {
+        try { availabilityData = JSON.parse(savedAvail); } catch (e) {}
       }
 
       initFilterDropdown();
       calculateAndRenderStandings();
       renderSchedule();
       renderAvailabilityCalendar();
+
+      // 2. Pobierz najświeższe dane z Arkusza Google dla każdego gracza
+      loadDataFromSheets();
     });
   </script>
 </body>

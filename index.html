@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PORANNA LIGA PADLA #02</title>
+  <title>🎾 PORANNA LIGA PADLA #02</title>
   <style>
     :root {
       --bg: #090d16;
@@ -17,13 +17,11 @@
       --round-odd-bg: #111a2f;
       --round-odd-border: #1e293b;
       --round-odd-header: #38bdf8;
-      --round-odd-badge: #0369a1;
 
       /* Kolory kolejki parzystej (ciepły pomarańcz / bursztyn) */
       --round-even-bg: #261b11;
       --round-even-border: #452a12;
       --round-even-header: #fb923c;
-      --round-even-badge: #c2410c;
     }
 
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -31,6 +29,7 @@
     .container { width: 100%; max-width: 1040px; }
     h1 { text-align: center; color: #fff; font-size: 1.8rem; margin: 16px 0 24px; letter-spacing: 0.5px; }
     h2 { font-size: 1.25rem; margin-top: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .title-center { text-align: center; border-bottom: none; }
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
@@ -39,7 +38,7 @@
     table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.88rem; }
     th, td { padding: 9px 8px; border-bottom: 1px solid var(--border); }
     th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-    td.player-name { text-align: left; font-weight: 600; }
+    td.player-name { text-align: left; font-weight: 500; }
     .pts { font-weight: bold; color: var(--accent); font-size: 1rem; }
     .badge-diff-pos { color: #4ade80; font-weight: bold; }
     .badge-diff-neg { color: #f87171; font-weight: bold; }
@@ -54,15 +53,12 @@
     .round-block { border-radius: 12px; padding: 14px; margin-bottom: 24px; border: 1px solid; }
     .round-odd { background: var(--round-odd-bg); border-color: var(--round-odd-border); }
     .round-odd .round-title { color: var(--round-odd-header); }
-    .round-odd .round-badge { background: var(--round-odd-badge); }
 
     .round-even { background: var(--round-even-bg); border-color: var(--round-even-border); }
     .round-even .round-title { color: var(--round-even-header); }
-    .round-even .round-badge { background: var(--round-even-badge); }
 
     .round-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
     .round-title { font-size: 1.15rem; font-weight: bold; }
-    .round-badge { color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: bold; }
 
     .match-card { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; }
     .match-main { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
@@ -72,9 +68,8 @@
 
     .teams-box { display: flex; flex-direction: column; gap: 6px; }
     .pair-container { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); }
-    .pair-player { font-size: 0.88rem; line-height: 1.35; }
-    .pair-player.top { font-weight: 600; color: #f8fafc; }
-    .pair-player.sub { color: #cbd5e1; font-size: 0.82rem; }
+    /* Gracze bez pogrubień – jednolity styl */
+    .pair-player { font-size: 0.88rem; line-height: 1.35; font-weight: normal; color: #f8fafc; }
     .vs-divider { text-align: center; font-size: 0.72rem; font-weight: 800; color: var(--text-muted); margin: -2px 0; }
 
     .sets-box { display: flex; flex-direction: column; gap: 6px; align-items: center; }
@@ -88,8 +83,12 @@
     .meta-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .meta-label { color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
     
+    .match-actions { display: flex; gap: 8px; align-items: center; }
     .btn-save { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 7px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
     .btn-save:hover { background: #16a34a; }
+    .btn-clear { background: #ef4444; color: #fff; font-weight: bold; border: none; padding: 7px 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 0.78rem; }
+    .btn-clear:hover { background: #dc2626; }
+
     .match-summary-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 0.82rem; }
     .score-completed { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #16a34a; }
 
@@ -97,7 +96,7 @@
     .calendar-wrapper { overflow-x: auto; padding-bottom: 8px; }
     .cal-table { width: max-content; border-collapse: separate; border-spacing: 2px; }
     .cal-table th, .cal-table td { padding: 4px 5px; font-size: 0.74rem; text-align: center; }
-    .cal-sticky-col { position: sticky; left: 0; background: #131b2e; z-index: 2; text-align: left; font-weight: 600; min-width: 190px; border-right: 2px solid var(--border); }
+    .cal-sticky-col { position: sticky; left: 0; background: #131b2e; z-index: 2; text-align: left; font-weight: normal; min-width: 190px; border-right: 2px solid var(--border); }
     .cal-slot-btn { width: 34px; height: 26px; border-radius: 4px; border: 1px solid #2d3b55; background: #1e293b; cursor: pointer; transition: 0.15s; }
     .cal-slot-btn.available { background: #15803d; border-color: #22c55e; }
     .cal-slot-btn.unavailable { background: #991b1b; border-color: #ef4444; }
@@ -122,11 +121,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>PORANNA LIGA PADLA #02</h1>
-
-    <!-- 1. TABELA INDYWIDUALNA -->
+    <!-- 1. TABELA INDYWIDUALNA Z NOWYM TYTUŁEM -->
     <div class="card">
-      <h2>Tabela Indywidualna (24 Graczy)</h2>
+      <h2 style="font-size: 1.5rem; text-align: center; border-bottom: none; margin-bottom: 20px;">🎾 PORANNA LIGA PADLA #02</h2>
       <div class="table-responsive">
         <table>
           <thead>
@@ -162,8 +159,8 @@
 
     <!-- 3. DOSTĘPNOŚĆ -->
     <div class="card">
-      <h2>Dostępność Zawodników (od DZIŚ do 31.12.2026)</h2>
-      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -8px;">
+      <h2 class="title-center">DOSTĘPNOŚĆ ZAWODNIKÓW</h2>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -8px; text-align: center;">
         Kliknij w kafelek: <strong>Szary</strong> (nieokreślony) ➔ <strong>Zielony</strong> (dostępny) ➔ <strong>Czerwony</strong> (niedostępny). Przesuwaj tabelę w prawo.
       </p>
       <div class="calendar-wrapper">
@@ -213,11 +210,9 @@
 
     const ALL_PLAYERS = [...TOP_PLAYERS, ...BOTTOM_PLAYERS];
 
-    // Generowanie zbalansowanego terminarza 12 kolejek x 6 meczów
     function generateTournamentSchedule() {
       const schedule = [];
       const rrPairings = [];
-      // 1-factorization dla 12 graczy TOP
       for (let rnd = 0; rnd < 11; rnd++) {
         const roundPairs = [[11, rnd]];
         for (let i = 1; i <= 5; i++) {
@@ -276,7 +271,6 @@
       setTimeout(() => { toast.style.display = "none"; }, 3000);
     }
 
-    // Auto-uzupełnianie gemów według zasad padla (do 6 lub 7-5 / 7-6)
     function onScoreInput(matchId, setIdx, pairIdx, val) {
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
@@ -303,7 +297,6 @@
         }
       }
 
-      // Aktualizacja pól w DOM
       document.getElementById(`m${matchId}-s${setIdx}-p1`).value = setObj.s1;
       document.getElementById(`m${matchId}-s${setIdx}-p2`).value = setObj.s2;
       updateSetScoreDisplay(matchId);
@@ -333,7 +326,6 @@
       const dateVal = document.getElementById(`m${matchId}-date`).value;
       const reporterVal = document.getElementById(`m${matchId}-reporter`).value;
 
-      // Sprawdzenie czy wszystkie 3 sety są uzupełnione
       let allSetsFilled = true;
       for (let i = 0; i < 3; i++) {
         const g1 = match.scores[i].s1.trim();
@@ -344,7 +336,6 @@
         }
       }
 
-      // WALIDACJA: jeśli brakuje wyników, daty lub osoby wprowadzającej
       if (!allSetsFilled || !dateVal || !reporterVal) {
         showToast("Uzupełnij pełne dane");
         return;
@@ -354,12 +345,32 @@
       match.reporter = reporterVal;
       match.completed = true;
 
-      // Zapis lokalny
       localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
       
       calculateAndRenderStandings();
       renderSchedule();
       showToast("Wynik meczu został poprawnie zapisany!");
+    }
+
+    // Zerowanie meczu
+    function clearMatch(matchId) {
+      const match = matchesData.find(m => m.id === matchId);
+      if (!match) return;
+
+      match.scores = [
+        { s1: "", s2: "" },
+        { s1: "", s2: "" },
+        { s1: "", s2: "" }
+      ];
+      match.date = "";
+      match.reporter = "";
+      match.completed = false;
+
+      localStorage.setItem("padel_matches_p02", JSON.stringify(matchesData));
+
+      calculateAndRenderStandings();
+      renderSchedule();
+      showToast("Dane meczu zostały wyczyszczone");
     }
 
     function calculateAndRenderStandings() {
@@ -383,7 +394,6 @@
           else if (g2 > g1) p2Sets++;
         });
 
-        // Wszyscy czterej gracze w meczu
         m.pair1.forEach(p => {
           if (stats[p]) {
             stats[p].matches++;
@@ -463,7 +473,6 @@
         roundBox.innerHTML = `
           <div class="round-header-box">
             <span class="round-title">Kolejka ${r}</span>
-            <span class="round-badge">${isOdd ? 'Seria Granatowa' : 'Seria Bursztynowa'} (6 Meczów)</span>
           </div>
         `;
 
@@ -481,13 +490,13 @@
             <div class="match-main">
               <div class="teams-box">
                 <div class="pair-container">
-                  <div class="pair-player top">${m.pair1[0]}</div>
-                  <div class="pair-player sub">${m.pair1[1]}</div>
+                  <div class="pair-player">${m.pair1[0]}</div>
+                  <div class="pair-player">${m.pair1[1]}</div>
                 </div>
                 <div class="vs-divider">VS</div>
                 <div class="pair-container">
-                  <div class="pair-player top">${m.pair2[0]}</div>
-                  <div class="pair-player sub">${m.pair2[1]}</div>
+                  <div class="pair-player">${m.pair2[0]}</div>
+                  <div class="pair-player">${m.pair2[1]}</div>
                 </div>
               </div>
 
@@ -521,10 +530,11 @@
                 <span class="meta-label">Wprowadził:</span>
                 <select id="m${m.id}-reporter">${reporterOptions}</select>
               </div>
-              <div style="display: flex; gap: 8px; align-items: center;">
+              <div class="match-actions">
                 <span id="m${m.id}-summary" class="match-summary-badge ${m.completed ? 'score-completed' : ''}">
-                  ${m.completed ? 'Mecz zakończony' : 'W trakcie / Do rozegrania'}
+                  ${m.completed ? 'Mecz zakończony' : 'Do rozegrania'}
                 </span>
+                <button class="btn-clear" onclick="clearMatch(${m.id})" title="Zeruj wynik tego meczu">WYCZYŚĆ DANE</button>
                 <button class="btn-save" onclick="saveMatch(${m.id})">ZAPISZ</button>
               </div>
             </div>
@@ -548,7 +558,6 @@
       renderSchedule();
     }
 
-    // 3. KALENDARZ DOSTĘPNOŚCI (OD DZIŚ DO 31.12.2026)
     const TIME_SLOTS = [
       "7:00-7:30", "7:30-8:00", "8:00-8:30", "8:30-9:00", 
       "9:00-9:30", "9:30-10:00", "10:00-10:30"
@@ -557,14 +566,13 @@
     function renderAvailabilityCalendar() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const endDate = new Date(2026, 11, 31); // 31 grudnia 2026
+      const endDate = new Date(2026, 11, 31);
 
       const saved = localStorage.getItem("padel_availability_p02");
       if (saved) {
         try { availabilityData = JSON.parse(saved); } catch (e) {}
       }
 
-      // Nagłówki dni
       const headDates = document.getElementById("cal-dates-head");
       const headSlots = document.getElementById("cal-slots-head");
       headDates.innerHTML = `<th class="cal-sticky-col" rowspan="2">Zawodnik</th>`;
@@ -572,7 +580,7 @@
 
       let cur = new Date(today);
       const datesList = [];
-      const daysLimit = 100; // Renderujemy w bezpiecznych partiach
+      const daysLimit = 100;
       let count = 0;
 
       while (cur <= endDate && count < daysLimit) {
@@ -641,7 +649,6 @@
       });
     }
 
-    // Inicjalizacja aplikacji
     window.addEventListener("DOMContentLoaded", () => {
       const savedMatches = localStorage.getItem("padel_matches_p02");
       if (savedMatches) {

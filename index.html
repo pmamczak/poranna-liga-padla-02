@@ -816,15 +816,15 @@
             const td = document.createElement("td");
             const btn = document.createElement("button");
             btn.className = "cal-slot-btn";
-            const key = `${player}|${dateStr}|${slot}`;
-            const status = availabilityData[key] || "none";
+const key = `${player}|${dateStr}|${slot}`;
+            const rawStatus = String(availabilityData[key] || "none").toLowerCase().trim();
 
-            btn.className = "cal-slot-btn"; // Resetuje do szarego
-if (status === "available") {
-  btn.classList.add("available");
-} else if (status === "unavailable") {
-  btn.classList.add("unavailable");
-}
+            btn.className = "cal-slot-btn"; // Zawsze resetuj do szarego
+            if (rawStatus === "available" || rawStatus === "dostępny" || rawStatus === "dostepny") {
+              btn.classList.add("available");
+            } else if (rawStatus === "unavailable" || rawStatus === "niedostępny" || rawStatus === "niedostepny") {
+              btn.classList.add("unavailable");
+            }
 
             btn.onclick = () => {
               let nextStatus = "available";

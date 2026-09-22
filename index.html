@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎾 PORANNA LIGA PADLA #02</title>
-  <div id="sync-indicator" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: -12px; margin-bottom: 16px;">
-  ⏳ Pobieranie wyników z arkusza...
-</div>
   <style>
     :root {
       --bg: #090d16;
@@ -35,12 +32,25 @@
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 
+    /* WSKAŹNIK SYNCHRONIZACJI */
+    #sync-indicator {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: -12px;
+      margin-bottom: 16px;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+    .sync-ok { color: #4ade80 !important; }
+    .sync-err { color: #f87171 !important; }
+
     /* TABELA */
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.88rem; }
     th, td { padding: 9px 8px; border-bottom: 1px solid var(--border); }
     th { color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; background: rgba(255,255,255,0.02); }
-    td.player-name { text-align: left; font-weight: 500; }
+    td.player-name { text-align: left; font-weight: normal; }
     .pts { font-weight: bold; color: var(--accent); font-size: 1rem; }
     .badge-diff-pos { color: #4ade80; font-weight: bold; }
     .badge-diff-neg { color: #f87171; font-weight: bold; }
@@ -102,7 +112,7 @@
     .cal-slot-btn.available { background: #15803d; border-color: #22c55e; }
     .cal-slot-btn.unavailable { background: #991b1b; border-color: #ef4444; }
 
-    /* KOMUNIKATY */
+    /* KOMUNIKATY TOAST */
     .toast-alert {
       position: fixed;
       bottom: 24px;
@@ -125,7 +135,9 @@
   <div class="container">
     <!-- 1. TABELA INDYWIDUALNA -->
     <div class="card">
-      <h2 style="font-size: 1.5rem; text-align: center; border-bottom: none; margin-bottom: 20px;">🎾 PORANNA LIGA PADLA #02</h2>
+      <h2 style="font-size: 1.5rem; text-align: center; border-bottom: none; margin-bottom: 12px;">🎾 PORANNA LIGA PADLA #02</h2>
+      <div id="sync-indicator">⏳ Pobieranie wyników z arkusza...</div>
+      
       <div class="table-responsive">
         <table>
           <thead>
@@ -180,10 +192,7 @@
   <div id="toast" class="toast-alert">Uzupełnij pełne dane</div>
 
   <script>
-    // =========================================================================
-    // ⚠️ TUTAJ WPROWADŹ SWÓJ ADRES Z GOOGLE APPS SCRIPT (zakończony na /exec):
-    // =========================================================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuOxgdPYmkCheR6MiABi5BxLNSO66nHYwEGq6Xwt33Y6zFy_0PfhntpCh2HvTZkWwY2g/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec";
 
     const TOP_PLAYERS = [
       "🇵🇱 Marek Kurzyk (5,1)",
@@ -306,13 +315,16 @@
         }
       }
 
-      document.getElementById(`m${matchId}-s${setIdx}-p1`).value = setObj.s1;
-      document.getElementById(`m${matchId}-s${setIdx}-p2`).value = setObj.s2;
+      const input1 = document.getElementById(`m${matchId}-s${setIdx}-p1`);
+      const input2 = document.getElementById(`m${matchId}-s${setIdx}-p2`);
+      if (input1) input1.value = setObj.s1;
+      if (input2) input2.value = setObj.s2;
       updateSetScoreDisplay(matchId);
     }
 
     function updateSetScoreDisplay(matchId) {
       const match = matchesData.find(m => m.id === matchId);
+      if (!match) return;
       let p1Sets = 0, p2Sets = 0;
       match.scores.forEach(s => {
         const g1 = parseInt(s.s1, 10);
@@ -328,7 +340,6 @@
       }
     }
 
-    // ZAPIS MECZU (LOKALNIE + GOOGLE SHEETS)
     function saveMatch(matchId) {
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
@@ -338,8 +349,8 @@
 
       let allSetsFilled = true;
       for (let i = 0; i < 3; i++) {
-        const g1 = match.scores[i].s1.trim();
-        const g2 = match.scores[i].s2.trim();
+        const g1 = match.scores[i].s1.toString().trim();
+        const g2 = match.scores[i].s2.toString().trim();
         if (g1 === "" || g2 === "" || isNaN(parseInt(g1, 10)) || isNaN(parseInt(g2, 10))) {
           allSetsFilled = false;
           break;
@@ -360,17 +371,14 @@
       renderSchedule();
       showToast("Wynik zapisany w arkuszu!", true);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec") {
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "save_match", match: match })
-        }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
-      }
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save_match", match: match })
+      }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
     }
 
-    // CZYSZCZENIE MECZU (LOKALNIE + GOOGLE SHEETS)
     function clearMatch(matchId) {
       const match = matchesData.find(m => m.id === matchId);
       if (!match) return;
@@ -389,14 +397,12 @@
       renderSchedule();
       showToast("Dane wyczyszczone", true);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec") {
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "save_match", match: match })
-        }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
-      }
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "save_match", match: match })
+      }).catch(err => console.error("Błąd wysyłania do arkusza:", err));
     }
 
     function calculateAndRenderStandings() {
@@ -406,7 +412,9 @@
       });
 
       matchesData.forEach(m => {
-        if (!m.completed) return;
+        // Mecz wlicza się do tabeli jeśli ma status completed lub 3 rozegrane sety
+        const hasAll3Sets = m.scores && m.scores.every(s => s.s1 !== "" && s.s2 !== "");
+        if (!m.completed && !hasAll3Sets) return;
 
         let p1Sets = 0, p2Sets = 0;
         let p1Games = 0, p2Games = 0;
@@ -594,6 +602,11 @@
       today.setHours(0, 0, 0, 0);
       const endDate = new Date(2026, 11, 31);
 
+      const saved = localStorage.getItem("padel_availability_p02");
+      if (saved) {
+        try { availabilityData = JSON.parse(saved); } catch (e) {}
+      }
+
       const headDates = document.getElementById("cal-dates-head");
       const headSlots = document.getElementById("cal-slots-head");
       headDates.innerHTML = `<th class="cal-sticky-col" rowspan="2">Zawodnik</th>`;
@@ -660,15 +673,12 @@
 
               localStorage.setItem("padel_availability_p02", JSON.stringify(availabilityData));
 
-              // Wysyłka dostępności do Google Sheets
-              if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec") {
-                fetch(SCRIPT_URL, {
-                  method: "POST",
-                  mode: "no-cors",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ action: "save_availability", key: key, status: nextStatus })
-                }).catch(err => console.error("Błąd zapisu dostępności:", err));
-              }
+              fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "save_availability", key: key, status: nextStatus })
+              }).catch(err => console.error("Błąd zapisu dostępności:", err));
             };
 
             td.appendChild(btn);
@@ -680,13 +690,8 @@
       });
     }
 
-// POBIERANIE DANYCH Z GOOGLE SHEETS PRZY STARTE
     async function loadDataFromSheets() {
-      if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycby-eAWmkLBMCvWahDs3WhWQiUZaF4xSJ5Z7IaSbCgZAZIhTp1cWv5u45m7CX8N6LEXCWg/exec")) return;
-      
-      const statusBadge = document.getElementById("sync-indicator");
-      if (statusBadge) statusBadge.textContent = "⏳ Pobieranie wyników z arkusza...";
-
+      const indicator = document.getElementById("sync-indicator");
       try {
         const res = await fetch(SCRIPT_URL + "?t=" + new Date().getTime());
         const data = await res.json();
@@ -698,8 +703,7 @@
               matchesData[idx] = {
                 ...matchesData[idx],
                 ...sheetMatch,
-                // Zabezpieczenie: jeśli mecz ma komplet wyników, traktuj jako completed
-                completed: sheetMatch.completed === true || sheetMatch.completed === "true"
+                completed: String(sheetMatch.completed).toLowerCase() === "true" || sheetMatch.completed === true
               };
             }
           });
@@ -715,11 +719,35 @@
           renderAvailabilityCalendar();
         }
 
-        if (statusBadge) statusBadge.textContent = "🟢 Połączono z arkuszem Google";
+        if (indicator) {
+          indicator.textContent = "🟢 Połączono z arkuszem Google (dane aktualne)";
+          indicator.className = "sync-ok";
+        }
       } catch (err) {
         console.warn("Błąd pobierania danych z Arkusza:", err);
-        if (statusBadge) statusBadge.textContent = "⚠️ Tryb offline (dane lokalne)";
+        if (indicator) {
+          indicator.textContent = "🟡 Załadowano dane z pamięci podręcznej";
+          indicator.className = "sync-err";
+        }
       }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedMatches = localStorage.getItem("padel_matches_p02");
+      if (savedMatches) {
+        try { matchesData = JSON.parse(savedMatches); } catch (e) {}
+      }
+      const savedAvail = localStorage.getItem("padel_availability_p02");
+      if (savedAvail) {
+        try { availabilityData = JSON.parse(savedAvail); } catch (e) {}
+      }
+
+      initFilterDropdown();
+      calculateAndRenderStandings();
+      renderSchedule();
+      renderAvailabilityCalendar();
+
+      loadDataFromSheets();
     });
   </script>
 </body>

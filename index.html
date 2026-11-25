@@ -311,11 +311,13 @@
       
       <div class="table-responsive">
         <table>
-          <thead>
+         <thead>
             <tr>
               <th style="width: 28px;">#</th>
               <th style="text-align: left;">Zawodnik</th>
               <th>Mecze</th>
+              <th>Wygrane</th>
+              <th>Przegrane</th>
               <th>Gemy +</th>
               <th>Gemy -</th>
               <th>Bilans</th>
@@ -577,7 +579,7 @@
     function calculateAndRenderStandings() {
       const stats = {};
       ALL_PLAYERS.forEach(p => {
-        stats[p] = { name: p, matches: 0, gamesWon: 0, gamesLost: 0, setsWon: 0 };
+        stats[p] = { name: p, matches: 0, wins: 0, losses: 0, gamesWon: 0, gamesLost: 0, setsWon: 0 };
       });
 
       matchesData.forEach(m => {
@@ -596,9 +598,14 @@
           else if (g2 > g1) p2Sets++;
         });
 
+        const p1Won = p1Sets > p2Sets;
+        const p2Won = p2Sets > p1Sets;
+
         m.pair1.forEach(p => {
           if (stats[p]) {
             stats[p].matches++;
+            if (p1Won) stats[p].wins++;
+            else if (p2Won) stats[p].losses++;
             stats[p].gamesWon += p1Games;
             stats[p].gamesLost += p2Games;
             stats[p].setsWon += p1Sets;
@@ -608,6 +615,8 @@
         m.pair2.forEach(p => {
           if (stats[p]) {
             stats[p].matches++;
+            if (p2Won) stats[p].wins++;
+            else if (p1Won) stats[p].losses++;
             stats[p].gamesWon += p2Games;
             stats[p].gamesLost += p1Games;
             stats[p].setsWon += p2Sets;
@@ -643,6 +652,8 @@
           <td>${idx + 1}</td>
           <td class="player-name">${s.name}</td>
           <td>${s.matches}</td>
+          <td style="color: #4ade80; font-weight: 600;">${s.wins}</td>
+          <td style="color: #f87171; font-weight: 600;">${s.losses}</td>
           <td>${s.gamesWon}</td>
           <td>${s.gamesLost}</td>
           <td class="${diffClass}">${diffFormatted}</td>
